@@ -45,7 +45,13 @@ public class TrapController : MonoBehaviour
         position.y = Mathf.Round(position.y);
 
         Explosion explosion = Instantiate(explosionPrefab, position, Quaternion.identity);
+        explosion.SetActiveRenderer(explosion.start);
         Destroy(explosion.gameObject, explosionDuration);
+
+        Explode(position, Vector2.up, explosionRadius);
+        Explode(position, Vector2.down, explosionRadius);
+        Explode(position, Vector2.left, explosionRadius);
+        Explode(position, Vector2.right, explosionRadius);
 
         Destroy(trap);
         trapsRemaining++;
@@ -57,4 +63,21 @@ public class TrapController : MonoBehaviour
             other.isTrigger = false;
         }
     }
+
+    public void Explode(Vector2 position, Vector2 direction, int length)
+    {
+        if (length <= 0) {
+            return;
+        }
+
+        position += direction;
+
+        Explosion explosion = Instantiate(explosionPrefab, position, Quaternion.identity);
+        explosion.SetActiveRenderer(length > 1 ? explosion.middle : explosion.end);
+        explosion.SetDirection(direction);
+        Destroy(explosion.gameObject, explosionDuration);
+
+        Explode(position, direction, length-1); 
+    }
+
 }

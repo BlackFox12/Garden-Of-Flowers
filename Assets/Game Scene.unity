@@ -256,7 +256,7 @@ MonoBehaviour:
   inputKey: 32
   trapFuseTime: 3
   trapAmount: 1
-  explosionPrefab: {fileID: 0}
+  explosionPrefab: {fileID: -6875938882457233852, guid: 0b25bd6a21acfdd48ac65901353fafc7, type: 3}
   explosionDuration: 1
   explosionRadius: 1
 --- !u!1 &705075052
