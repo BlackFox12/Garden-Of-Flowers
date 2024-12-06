@@ -5,6 +5,8 @@ using UnityEngine.Tilemaps;
 public class BombController : MonoBehaviour
 {
 
+
+    [Header("Bomb")]
     public KeyCode inputKey = KeyCode.Space;
     public GameObject bombPrefab;
     public float bombFuseTime = 3f;
@@ -12,11 +14,18 @@ public class BombController : MonoBehaviour
     private int bombsRemaining;
 
 
+
+    [Header("Explosion")]
     public Explosion explosionPrefab;
     public LayerMask explosionLayerMask;
     public float explosionDuration = 1f;
     public int explosionRadius = 1;
 
+
+
+    [Header("Destructible")]
+    public Tilemap destructibleTiles;
+    public Destructible destructiblePrefab;
 
 
 
@@ -84,15 +93,17 @@ public class BombController : MonoBehaviour
             return;
         }
 
+        position += direction;
+
 
         if (Physics2D.OverlapBox(position, Vector2.one / 2f, 0f, explosionLayerMask))
         {
-            //ClearDestructible(position);
+            ClearDestructible(position);
             
             return;
         }
 
-        position += direction;
+        
 
 
 
@@ -102,6 +113,28 @@ public class BombController : MonoBehaviour
         explosion.DestroyAfter(explosionDuration);
 
         Explode(position, direction, length - 1);
+    }
+
+
+
+
+    private void ClearDestructible(Vector2 position)
+    {
+        Vector3Int cell = destructibleTiles.WorldToCell(position);
+        TileBase tile = destructibleTiles.GetTile(cell);
+
+        if (tile != null)
+        {
+            Instantiate(destructiblePrefab, position, Quaternion.identity);
+            destructibleTiles.SetTile(cell, null);
+        }
+    }
+
+
+    public void AddBomb()
+    {
+        bombAmount++;
+        bombsRemaining++;
     }
 
 }
