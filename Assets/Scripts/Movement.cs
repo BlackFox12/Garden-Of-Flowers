@@ -70,6 +70,7 @@ public class Movement : MonoBehaviour
     {
         if (other.gameObject.layer == LayerMask.NameToLayer("Explosion"))
         {
+            Debug.Log("dead");
             DeathSequence();
         }
     }
@@ -86,7 +87,7 @@ public class Movement : MonoBehaviour
         spriteRendererDown.enabled = false;
         spriteRendererLeft.enabled = false;
         spriteRendererRight.enabled = false;
-        spriteRendererDeath.enabled = true;
+        //spriteRendererDeath.enabled = true;
 
         Invoke(nameof(OnDeathSequenceEnded), 1.25f);
     }
@@ -94,9 +95,8 @@ public class Movement : MonoBehaviour
     private void OnDeathSequenceEnded()
     {
         gameObject.SetActive(false);
+        GameManager.Instance.GameOver();
         GameManager.Instance.CheckWinState();
     }
-
-
 
 }
