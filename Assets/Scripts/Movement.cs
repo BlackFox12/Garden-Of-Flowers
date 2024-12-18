@@ -20,6 +20,8 @@ public class Movement : MonoBehaviour
     public AnimatedSpriteRenderer spriteRendererRight;
     public AnimatedSpriteRenderer spriteRendererDeath;
     private AnimatedSpriteRenderer activeSpriteRenderer;
+
+    public GameManager gameManager;
     
 
     private void Awake() 
@@ -64,21 +66,7 @@ public class Movement : MonoBehaviour
         activeSpriteRenderer.idle = direction == Vector2.zero;
     }
 
-
-
-    private void OnTriggerEnter2D(Collider2D other)
-    {
-        if (other.gameObject.layer == LayerMask.NameToLayer("Explosion"))
-        {
-            Debug.Log("dead");
-            DeathSequence();
-        }
-    }
-
-
-
-
-    private void DeathSequence()
+    public void DeathSequence()
     {
         enabled = false;
         GetComponent<BombController>().enabled = false;
@@ -88,15 +76,17 @@ public class Movement : MonoBehaviour
         spriteRendererLeft.enabled = false;
         spriteRendererRight.enabled = false;
         //spriteRendererDeath.enabled = true;
+        
+        //gameManager.GameOver();
 
-        Invoke(nameof(OnDeathSequenceEnded), 1.25f);
+        //Invoke(nameof(OnDeathSequenceEnded), 1.25f);
     }
 
-    private void OnDeathSequenceEnded()
+    /* private void OnDeathSequenceEnded()
     {
         gameObject.SetActive(false);
         GameManager.Instance.GameOver();
         GameManager.Instance.CheckWinState();
-    }
+    } */
 
 }

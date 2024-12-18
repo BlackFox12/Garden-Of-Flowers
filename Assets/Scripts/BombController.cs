@@ -64,7 +64,7 @@ public class BombController : MonoBehaviour
         Destroy(basket);
         bombsRemaining++;
 
-        Explode2(position, explosionRadius);
+        Explode(position, explosionRadius);
 
     }
 
@@ -77,26 +77,7 @@ public class BombController : MonoBehaviour
     }
 
 
-
-    private void Explode(Vector2 position, int length){
-        Quaternion spawnRotation = bunnyPrefab.transform.localRotation;
-        for (int i = 0; i < 4; i++) {
-            if (i == 1) {
-                spawnRotation = Quaternion.Euler(90, 90, -70);
-            } else if (i == 2) {
-                spawnRotation = Quaternion.Euler(180, 90, -110);
-            } else if (i == 3) {
-                spawnRotation = Quaternion.Euler(-90, 90, -110);
-            } else {
-                spawnRotation = bunnyPrefab.transform.localRotation; // Default rotation
-        }
-
-        GameObject bunny = Instantiate(bunnyPrefab, position, spawnRotation);
-        }
-    }
-
-
-    private void Explode2(Vector2 position, int length)
+    private void Explode(Vector2 position, int length)
     {
         // Define directions: Up, Down, Left, Right
         Vector2[] directions = new Vector2[]
@@ -109,11 +90,6 @@ public class BombController : MonoBehaviour
         {
             Vector2 direction = directions[i];
 
-            if (IsBlocked(position + direction))
-            {
-                continue; // Skip this direction and move to the next one
-            }
-
             // Adjust spawn rotation for visual effect
             Quaternion spawnRotation = Quaternion.identity;
             if (i == 0) { spawnRotation = bunnyPrefab.transform.localRotation; }
@@ -123,6 +99,9 @@ public class BombController : MonoBehaviour
             
             // Instantiate the rabbit
             GameObject bunny = Instantiate(bunnyPrefab, position, spawnRotation);
+            if (IsBlocked(position + direction) || IsBlocked(position)) {
+                Destroy(bunny);
+            }
 
             // Start coroutine to move the rabbit
             StartCoroutine(MoveRabbit(bunny, position, direction, length));
@@ -131,51 +110,63 @@ public class BombController : MonoBehaviour
 
     private bool IsBlocked(Vector2 position)
     {
-        // Check for blocking objects in the given position (e.g., flowers or bricks)
-        return Physics2D.OverlapBox(position, Vector2.one / 2f, 0f, explosionLayerMask);
+        // Check for blocking objects in the given position
+        return Physics2D.OverlapBox(position, Vector2.one/2f, 0f, explosionLayerMask);
     }
 
     private IEnumerator MoveRabbit(GameObject bunny, Vector2 startPosition, Vector2 direction, int length)
     {
+        
         float moveDuration = 1f;
         Vector2 currentPosition = startPosition;
 
         for (int i = 0; i < length; i++) // Move for 'length' blocks
         {
-            Vector2 targetPosition = currentPosition + direction;
-            float elapsedTime = 0f;
+            if (bunny != null) {
+                Vector2 targetPosition = currentPosition + direction;
+                float elapsedTime = 0f;
 
-            // Smoothly move the rabbit to the target position
-            while (elapsedTime < moveDuration)
-            {
-                bunny.transform.position = Vector2.Lerp(currentPosition, targetPosition, elapsedTime / moveDuration);
-                elapsedTime += Time.deltaTime;
-                yield return null;
+                // Smoothly move the rabbit to the target position
+                while (elapsedTime < moveDuration)
+                {
+                    if (bunny == null) // Check if bunny was removed during movement
+                    {
+                        yield break; // Exit the coroutine early if bunny is no longer available
+                    }
+                    bunny.transform.position = Vector2.Lerp(currentPosition, targetPosition, elapsedTime / moveDuration);
+                    elapsedTime += Time.deltaTime;
+                    yield return null;
+                }
+
+                // Snap to the exact target position
+                bunny.transform.position = targetPosition;
+                
+                ClearDestructible(targetPosition, direction, bunny);
+
+
+                // Update the current position for the next block
+                currentPosition = targetPosition;
             }
-
-            // Snap to the exact target position
-            bunny.transform.position = targetPosition;
-            
-            ClearDestructible(targetPosition);
-
-            // Update the current position for the next block
-            currentPosition = targetPosition;
         }
-
         // Destroy the rabbit after reaching its final position
         Destroy(bunny);
     }
 
-    public void ClearDestructible(Vector2 position)
+    public void ClearDestructible(Vector2 position, Vector2 direction, GameObject bunny)
     {
         Vector3Int cell = destructibleTiles.WorldToCell(position);
         TileBase tile = destructibleTiles.GetTile(cell);
+        if (IsBlocked(position + direction) || IsBlocked(position)) {
+            Destroy(bunny);
+        }
 
         if(tile != null)
         {
             Instantiate(destructiblePrefab, position, Quaternion.identity);
             destructibleTiles.SetTile(cell, null);
+            Destroy(bunny);
         }
+        
     }
 
     public void AddBomb()

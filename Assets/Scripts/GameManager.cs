@@ -1,6 +1,8 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using TMPro;
 
 [DefaultExecutionOrder(-1)]
 public class GameManager : MonoBehaviour
@@ -11,6 +13,7 @@ public class GameManager : MonoBehaviour
 
     public GameObject gameOverPanel; // Reference to the Game Over UI Panel
     public Button restartButton;
+    public TextMeshProUGUI  gameOverText;
 
 
     private void Awake()
@@ -62,9 +65,24 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public void GameOver()
+    public void GameOver(bool won)
     {
-        gameObject.SetActive(true);
+        gameOverPanel.SetActive(true);
+
+        // Set the appropriate message based on win/loss
+        if (gameOverText != null)
+        {
+            if (won)
+            {
+                gameOverText.text = "You Won!";
+            }
+            else
+            {
+                gameOverText.text = "Game Over";
+            }
+        }
+
+        Debug.Log(won ? "You won!" : "Game over");
     }
 
     public void NewRound()
