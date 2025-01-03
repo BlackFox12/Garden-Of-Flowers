@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -12,6 +13,7 @@ public class BombController : MonoBehaviour
     public float bombFuseTime = 3f;
     public int bombAmount = 1;
     private int bombsRemaining;
+    public static List<GameObject> ActiveBombs = new List<GameObject>();
 
 
 
@@ -47,12 +49,12 @@ public class BombController : MonoBehaviour
 
     private IEnumerator PlaceBomb()
     {
-
         Vector2 position = transform.position;
         position.x = Mathf.Round(position.x);
         position.y = Mathf.Round(position.y);
 
         GameObject basket = Instantiate(basketPrefab, position, basketPrefab.transform.rotation);
+        ActiveBombs.Add(basket); // Add bomb to the list
         bombsRemaining--;
 
         yield return new WaitForSeconds(bombFuseTime);
@@ -62,10 +64,10 @@ public class BombController : MonoBehaviour
         position.y = Mathf.Round(position.y);
 
         Destroy(basket);
+        ActiveBombs.Remove(basket); // Remove bomb after it explodes
         bombsRemaining++;
 
         Explode(position, explosionRadius);
-
     }
 
     private void OnTriggerExit2D(Collider2D other)
