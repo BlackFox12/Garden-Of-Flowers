@@ -37,7 +37,7 @@ public class Bunny : MonoBehaviour
     private void TriggerDeathSequence(GameObject player)
     {
         // Get the Movement script attached to the player and trigger DeathSequence
-        Movement movementScript = player.GetComponent<Movement>();
+        /*Movement movementScript = player.GetComponent<Movement>();
         if (movementScript != null)
         {
             Debug.Log("Triggering DeathSequence for " + player.name);
@@ -46,7 +46,7 @@ public class Bunny : MonoBehaviour
         else
         {
             Debug.LogWarning("No Movement script found on " + player.name);
-        }
+        }*/
         if (player.name == "Player2") {
             gameManager.GameOver(true);
         } else {

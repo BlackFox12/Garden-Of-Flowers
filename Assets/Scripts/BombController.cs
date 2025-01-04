@@ -170,6 +170,15 @@ public class BombController : MonoBehaviour
         }
         
     }
+    public void PlaceBombExternally()
+    {
+        if (bombsRemaining > 0)
+        {
+            StartCoroutine(PlaceBomb());
+        }
+    }
+
+
 
     public void AddBomb()
     { 

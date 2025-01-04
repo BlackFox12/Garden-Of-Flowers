@@ -3,7 +3,7 @@ using Pada1.BBCore;
 using Pada1.BBCore.Tasks;
 using Pada1.BBCore.Framework;
 
-[Condition("Custom/IsInDanger")]
+[Condition("AI/IsInDanger")]
 [Help("Checks if the player is in danger from any active bombs.")]
 public class IsInDangerCondition : ConditionBase
 {
@@ -33,6 +33,7 @@ public class IsInDangerCondition : ConditionBase
             float distance = Vector2.Distance(playerPosition, bombPosition);
             if (distance <= bombController.explosionRadius)
             {
+                Debug.Log("Is In Danger");
                 return true; // Player is in danger
             }
         }

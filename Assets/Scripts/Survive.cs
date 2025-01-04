@@ -14,46 +14,45 @@ public class Survive : BasePrimitiveAction
     [InParam("bombRadius")]
     public float bombRadius;
 
-    [OutParam("isInDanger")]
-    public bool isInDanger;
+    private NavMeshAgentMovement enemyMovement;
 
+    public override void OnStart()
+    {
+        base.OnStart();
+
+        enemyMovement = aiAgent.GetComponent<NavMeshAgentMovement>();
+        if (enemyMovement == null)
+        {
+            Debug.LogError("NavMeshAgentMovement component missing on AI Agent.");
+        }
+    }
     public override TaskStatus OnUpdate()
     {
         if (aiAgent == null)
         {
             Debug.LogError("AI Agent is not assigned.");
-            isInDanger = false;
             return TaskStatus.FAILED;
         }
 
         // Check for bombs in radius
         Collider[] bombs = Physics.OverlapSphere(aiAgent.transform.position, bombRadius, LayerMask.GetMask("Bomb"));
-        isInDanger = bombs.Length > 0;
 
-        if (isInDanger)
+        // Move to the safest point (opposite to bomb positions)
+        Vector3 safestPoint = aiAgent.transform.position;
+        foreach (var bomb in bombs)
         {
-            NavMeshAgent navAgent = aiAgent.GetComponent<NavMeshAgent>();
-            if (navAgent == null)
-            {
-                Debug.LogError("NavMeshAgent component missing on AI Agent.");
-                return TaskStatus.FAILED;
-            }
-
-            // Move to the safest point (opposite to bomb positions)
-            Vector3 safestPoint = aiAgent.transform.position;
-            foreach (var bomb in bombs)
-            {
-                Vector3 directionAway = aiAgent.transform.position - bomb.transform.position;
-                safestPoint += directionAway.normalized * bombRadius;
-            }
-
-            NavMeshHit hit;
-            if (NavMesh.SamplePosition(safestPoint, out hit, bombRadius, NavMesh.AllAreas))
-            {
-                navAgent.SetDestination(hit.position);
-                return TaskStatus.COMPLETED;
-            }
+            Vector3 directionAway = aiAgent.transform.position - bomb.transform.position;
+            safestPoint += directionAway.normalized * bombRadius;
         }
+
+        NavMeshHit hit;
+        if (NavMesh.SamplePosition(safestPoint, out hit, bombRadius, NavMesh.AllAreas))
+        {
+            enemyMovement.SetTargetVector(hit.position);
+            Debug.Log("Running away to safe place");
+            return TaskStatus.COMPLETED;
+        }
+        
 
         return TaskStatus.FAILED;
     }

@@ -5,7 +5,7 @@ using Pada1.BBCore.Framework;
 using Pada1.BBCore.Tasks;
 
 [Action("AI/Attack")]
-[Help("Moves towards the player and places a bomb if there is a clear path.")]
+[Help("Moves towards the player and places a bomb.")]
 public class Attack : BasePrimitiveAction
 {
     [InParam("aiAgent")]
@@ -14,53 +14,41 @@ public class Attack : BasePrimitiveAction
     [InParam("player")]
     public Transform player;
 
-    [InParam("bombPrefab")]
-    public GameObject bombPrefab;
+    private BombController bombController;
+    private NavMeshAgentMovement enemyMovement;
+    public override void OnStart()
+    {
+        base.OnStart();
 
-    [OutParam("hasClearPath")]
-    public bool hasClearPath;
-
+        bombController = aiAgent.GetComponent<BombController>();
+        if (bombController == null)
+        {
+            Debug.LogError("BombController component missing on AI Agent.");
+        }
+        enemyMovement = aiAgent.GetComponent<NavMeshAgentMovement>();
+        if (enemyMovement == null)
+        {
+            Debug.LogError("NavMeshAgentMovement component missing on AI Agent.");
+        }
+    }
     public override TaskStatus OnUpdate()
     {
-        if (aiAgent == null || player == null || bombPrefab == null)
+        if (aiAgent == null || player == null)
         {
-            Debug.LogError("AI Agent, Player, or Bomb Prefab is not assigned.");
-            hasClearPath = false;
+            Debug.LogError("AI Agent or Player is not assigned.");
             return TaskStatus.FAILED;
         }
 
-        NavMeshAgent navAgent = aiAgent.GetComponent<NavMeshAgent>();
-        if (navAgent == null)
-        {
-            Debug.LogError("NavMeshAgent component missing on AI Agent.");
-            hasClearPath = false;
-            return TaskStatus.FAILED;
-        }
+        // Set destination towards player
+        enemyMovement.SetTarget(player);
 
-        // Check for clear path using Raycast
-        Vector3 direction = player.position - aiAgent.transform.position;
-        if (Physics.Raycast(aiAgent.transform.position, direction, out RaycastHit hit))
+        // Place a bomb when close to the player
+        if (Vector3.Distance(aiAgent.transform.position, player.position) <= 1.0f)
         {
-            hasClearPath = hit.transform == player;
-        }
-        else
-        {
-            hasClearPath = false;
-        }
-
-        if (hasClearPath)
-        {
-            // Move towards the player and place a bomb
-            navAgent.SetDestination(player.position);
-
-            Vector3 bombPosition = player.position;
-            bombPosition.x = Mathf.Round(bombPosition.x);
-            bombPosition.y = Mathf.Round(bombPosition.y);
-            GameObject.Instantiate(bombPrefab, bombPosition, Quaternion.identity);
-
+            bombController.PlaceBombExternally();
             return TaskStatus.COMPLETED;
         }
 
-        return TaskStatus.FAILED;
+        return TaskStatus.RUNNING;
     }
 }
