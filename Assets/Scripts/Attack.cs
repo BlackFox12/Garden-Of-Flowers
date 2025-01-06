@@ -15,22 +15,23 @@ public class Attack : BasePrimitiveAction
     public Transform player;
 
     private BombController bombController;
-    private NavMeshAgentMovement enemyMovement;
+    private AiAutoPath enemyMovement;
+
     public override void OnStart()
     {
         base.OnStart();
-
         bombController = aiAgent.GetComponent<BombController>();
         if (bombController == null)
         {
             Debug.LogError("BombController component missing on AI Agent.");
         }
-        enemyMovement = aiAgent.GetComponent<NavMeshAgentMovement>();
+        enemyMovement = aiAgent.GetComponent<AiAutoPath>();
         if (enemyMovement == null)
         {
             Debug.LogError("NavMeshAgentMovement component missing on AI Agent.");
         }
     }
+
     public override TaskStatus OnUpdate()
     {
         if (aiAgent == null || player == null)
@@ -39,16 +40,20 @@ public class Attack : BasePrimitiveAction
             return TaskStatus.FAILED;
         }
 
-        // Set destination towards player
-        enemyMovement.SetTarget(player);
+        Vector2 agentPosition = aiAgent.transform.position;
+        Vector2 playerPosition = player.transform.position;
 
-        // Place a bomb when close to the player
-        if (Vector3.Distance(aiAgent.transform.position, player.position) <= 1.0f)
+
+        // Gå mot spelaren
+        enemyMovement.SetTargetVector(playerPosition);
+
+        // När tillräckligt nära, placera bomb
+        if (Vector2.Distance(agentPosition, playerPosition) <= 1.0f)
         {
             bombController.PlaceBombExternally();
-            return TaskStatus.COMPLETED;
+            Debug.Log("Bomb placed. Moving to safety.");
         }
 
-        return TaskStatus.RUNNING;
+        return TaskStatus.COMPLETED;
     }
 }

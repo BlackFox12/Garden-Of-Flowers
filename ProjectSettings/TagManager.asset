@@ -17,9 +17,9 @@ TagManager:
   - Explosion
   - Item
   - Brick
-  - 
-  - 
-  - 
+  - Obstacle
+  - Flower
+  - Walkable
   - 
   - 
   - 

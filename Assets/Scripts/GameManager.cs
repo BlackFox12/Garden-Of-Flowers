@@ -81,7 +81,7 @@ public class GameManager : MonoBehaviour
             }
         }
 
-        Debug.Log(won ? "You won!" : "Game over");
+        //Debug.Log(won ? "You won!" : "Game over");
     }
 
     public void NewRound()

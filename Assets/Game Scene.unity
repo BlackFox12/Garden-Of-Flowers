@@ -270,8 +270,10 @@ MonoBehaviour:
   explosionDuration: 1
   explosionRadius: 3
   velocity: 5
+  bunnySpeed: 5
   destructibleTiles: {fileID: 719141963}
   destructiblePrefab: {fileID: 5616828673155290636, guid: 49523ffb38e8d24469c4d10d440b64dd, type: 3}
+  aiAutoPath: {fileID: 344224473}
 --- !u!1 &149541859
 GameObject:
   m_ObjectHideFlags: 0
@@ -696,8 +698,10 @@ MonoBehaviour:
   explosionDuration: 1
   explosionRadius: 3
   velocity: 5
+  bunnySpeed: 5
   destructibleTiles: {fileID: 719141963}
   destructiblePrefab: {fileID: 5616828673155290636, guid: 49523ffb38e8d24469c4d10d440b64dd, type: 3}
+  aiAutoPath: {fileID: 344224473}
 --- !u!58 &344224467
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -769,7 +773,7 @@ Transform:
   m_GameObject: {fileID: 344224464}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 8.57, y: -5, z: 0}
+  m_LocalPosition: {x: 9, y: -5, z: 0}
   m_LocalScale: {x: 1.5, y: 1.5, z: 1.5}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -789,7 +793,7 @@ NavMeshAgent:
   m_GameObject: {fileID: 344224464}
   m_Enabled: 1
   m_AgentTypeID: 0
-  m_Radius: 0.35
+  m_Radius: 0.25
   m_Speed: 3.5
   m_Acceleration: 8
   avoidancePriority: 50
@@ -798,7 +802,7 @@ NavMeshAgent:
   m_AutoTraverseOffMeshLink: 1
   m_AutoBraking: 1
   m_AutoRepath: 1
-  m_Height: 0.8
+  m_Height: 0.6
   m_BaseOffset: 0
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
@@ -832,6 +836,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   target: {x: 0, y: 0, z: 0}
   Navmesh: {fileID: 1449819526}
+  circlePrefab: {fileID: 4329263331110373568, guid: 8ad75983ce05cea4db59e9e0a51ae9c3, type: 3}
 --- !u!1 &349572214
 GameObject:
   m_ObjectHideFlags: 0
@@ -1154,8 +1159,9 @@ GameObject:
   m_Component:
   - component: {fileID: 650982777}
   - component: {fileID: 650982776}
+  - component: {fileID: 650982778}
   m_Layer: 0
-  m_Name: FlowerManager
+  m_Name: FlowerAndBombManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1191,6 +1197,19 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &650982778
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 650982775}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: edcc3cfc65d64ce40b863a6b96f1c666, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  delayToRemoveBomb: 3
 --- !u!1 &673907574
 GameObject:
   m_ObjectHideFlags: 0
@@ -1235,7 +1254,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 422fb6956201c7944ae2113a1a53b0b8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxTasksPerTick: 500
+  maxTasksPerTick: 1
   behavior: {fileID: 11400000, guid: d26e81e6bc7891841b4c2871ad23e37f, type: 2}
   paused: 0
   restartWhenFinished: 0
@@ -1246,10 +1265,8 @@ MonoBehaviour:
     boolParams: 
     boolParamsNames: []
     boolParamsLostDefaultValue: 
-    floatParams:
-    - 2
-    floatParamsNames:
-    - bombRadius
+    floatParams: []
+    floatParamsNames: []
     floatParamsLostDefaultValue: 
     stringParams: []
     stringParamsNames: []
@@ -1308,7 +1325,7 @@ GameObject:
   - component: {fileID: 705075054}
   - component: {fileID: 705075056}
   - component: {fileID: 705075057}
-  m_Layer: 6
+  m_Layer: 13
   m_Name: Grass
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3608,7 +3625,7 @@ GameObject:
   - component: {fileID: 719141962}
   - component: {fileID: 719141961}
   - component: {fileID: 719141964}
-  m_Layer: 6
+  m_Layer: 12
   m_Name: Flowers
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3724,6 +3741,26 @@ Tilemap:
   m_GameObject: {fileID: 719141959}
   m_Enabled: 1
   m_Tiles:
+  - first: {x: -1, y: -6, z: 0}
+    second:
+      serializedVersion: 2
+      m_TileIndex: 4
+      m_TileSpriteIndex: 4
+      m_TileMatrixIndex: 0
+      m_TileColorIndex: 0
+      m_TileObjectToInstantiateIndex: 65535
+      dummyAlignment: 0
+      m_AllTileFlags: 1073741825
+  - first: {x: 0, y: -6, z: 0}
+    second:
+      serializedVersion: 2
+      m_TileIndex: 4
+      m_TileSpriteIndex: 4
+      m_TileMatrixIndex: 0
+      m_TileColorIndex: 0
+      m_TileObjectToInstantiateIndex: 65535
+      dummyAlignment: 0
+      m_AllTileFlags: 1073741825
   - first: {x: 1, y: -6, z: 0}
     second:
       serializedVersion: 2
@@ -5144,7 +5181,7 @@ Tilemap:
     m_Data: {fileID: 0}
   - m_RefCount: 0
     m_Data: {fileID: 0}
-  - m_RefCount: 141
+  - m_RefCount: 143
     m_Data: {fileID: 11400000, guid: f71db2a5915f76d40bad02213102b690, type: 2}
   m_TileSpriteArray:
   - m_RefCount: 0
@@ -5155,10 +5192,10 @@ Tilemap:
     m_Data: {fileID: 0}
   - m_RefCount: 0
     m_Data: {fileID: 0}
-  - m_RefCount: 141
+  - m_RefCount: 143
     m_Data: {fileID: 21300000, guid: 4560e890de518d7409ce028cc5a8a465, type: 3}
   m_TileMatrixArray:
-  - m_RefCount: 141
+  - m_RefCount: 143
     m_Data:
       e00: 1
       e01: 0
@@ -5177,7 +5214,7 @@ Tilemap:
       e32: 0
       e33: 1
   m_TileColorArray:
-  - m_RefCount: 141
+  - m_RefCount: 143
     m_Data: {r: 1, g: 1, b: 1, a: 1}
   m_TileObjectToInstantiateArray: []
   m_AnimationFrameRate: 1
@@ -6338,7 +6375,7 @@ MonoBehaviour:
   m_Center: {x: 0, y: 2, z: 0}
   m_LayerMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 13312
   m_UseGeometry: 0
   m_DefaultArea: 0
   m_IgnoreNavMeshAgent: 1
@@ -6349,7 +6386,7 @@ MonoBehaviour:
   m_VoxelSize: 0.083333336
   m_BuildHeightMesh: 0
   m_MinRegionArea: 0
-  m_HideEditorLogs: 0
+  m_HideEditorLogs: 1
   m_NavMeshData: {fileID: 23800000, guid: e28a036cff71bb14d9c6b9d599ef367c, type: 2}
 --- !u!1 &1549766395
 GameObject:
@@ -7631,8 +7668,8 @@ Tilemap:
   m_TileObjectToInstantiateArray: []
   m_AnimationFrameRate: 1
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_Origin: {x: -10, y: -8, z: 0}
-  m_Size: {x: 21, y: 14, z: 1}
+  m_Origin: {x: -12, y: -16, z: 0}
+  m_Size: {x: 26, y: 24, z: 1}
   m_TileAnchor: {x: 0.5, y: 0.5, z: 0}
   m_TileOrientation: 0
   m_TileOrientationMatrix:

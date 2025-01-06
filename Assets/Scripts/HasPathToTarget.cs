@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.AI;
 using Pada1.BBCore;
 using Pada1.BBCore.Framework;
+using System;
 
 [Condition("AI/HasPathToTarget")]
 [Help("Checks if there is a path to the player using NavMesh.")]
@@ -12,7 +13,6 @@ public class HasPathToTarget : ConditionBase
 
     [InParam("player")]
     public Transform player;
-
     public override bool Check()
     {
         if (aiAgent == null || player == null)
@@ -30,7 +30,6 @@ public class HasPathToTarget : ConditionBase
 
         NavMeshPath path = new NavMeshPath();
         bool hasPath = NavMesh.CalculatePath(aiAgent.transform.position, player.position, NavMesh.AllAreas, path);
-        Debug.Log("hasPath = " + hasPath);
 
         return hasPath && path.status == NavMeshPathStatus.PathComplete;
     }
