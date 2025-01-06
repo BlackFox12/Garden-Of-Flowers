@@ -44,7 +44,7 @@ MonoBehaviour:
     <inputValues>\r\n          <entry name=\"aiAgent\" type=\"UnityEngine.GameObject\"
     isBlackboard=\"True\" blackboard=\"aiAgent\" />\r\n        </inputValues>\r\n     
     </inputParams>\r\n      <outputParams />\r\n      <localParams />\r\n    </ActionNode>\r\n   
-    <ConditionEvalNode id=\"32\" policy=\"WAIT_UNTIL_FALSE_AND_FAIL\" name=\"AI/HasPathToTarget\">\r\n     
+    <ConditionEvalNode id=\"32\" policy=\"WAIT_UNTIL_TRUE_AND_COMPLETE\" name=\"AI/HasPathToTarget\">\r\n     
     <inputParams>\r\n        <inputValues>\r\n          <entry name=\"aiAgent\" type=\"UnityEngine.GameObject\"
     isBlackboard=\"True\" blackboard=\"aiAgent\" />\r\n          <entry name=\"player\"
     type=\"UnityEngine.Transform\" isBlackboard=\"True\" blackboard=\"player\" />\r\n       

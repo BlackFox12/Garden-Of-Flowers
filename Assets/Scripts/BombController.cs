@@ -146,6 +146,12 @@ public class BombController : MonoBehaviour
 
     public void ClearDestructible(Vector2 position, Vector2 direction, GameObject bunny)
     {
+        if (destructibleTiles == null)
+        {
+            Debug.LogError("DestructibleTiles is not assigned to BombController.");
+            return;
+        }
+
         Vector3Int cell = destructibleTiles.WorldToCell(position);
         TileBase tile = destructibleTiles.GetTile(cell);
 
@@ -154,14 +160,26 @@ public class BombController : MonoBehaviour
             Destroy(bunny);
         }
 
-        if (tile != null)
+        if (tile == null)
         {
-            Instantiate(destructiblePrefab, position, Quaternion.identity);
-            destructibleTiles.SetTile(cell, null);
-            Destroy(bunny);
+            Debug.LogWarning($"No destructible tile found at position {position}.");
+            return;
+        }
+
+        Instantiate(destructiblePrefab, position, Quaternion.identity);
+        destructibleTiles.SetTile(cell, null);
+        Destroy(bunny);
+
+        if (aiAutoPath != null)
+        {
             aiAutoPath.RequestNavMeshUpdate();
         }
+        else
+        {
+            Debug.LogWarning("aiAutoPath is null. NavMesh update not requested.");
+        }
     }
+
 
     public void PlaceBombExternally()
     {

@@ -268,7 +268,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 1024
   explosionDuration: 1
-  explosionRadius: 1
+  explosionRadius: 3
   velocity: 5
   bunnySpeed: 5
   destructibleTiles: {fileID: 719141963}
