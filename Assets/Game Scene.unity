@@ -176,7 +176,7 @@ CircleCollider2D:
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
-  m_Radius: 0.25
+  m_Radius: 0.3
 --- !u!50 &146682391
 Rigidbody2D:
   serializedVersion: 4
@@ -268,7 +268,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 1024
   explosionDuration: 1
-  explosionRadius: 3
+  explosionRadius: 1
   velocity: 5
   bunnySpeed: 5
   destructibleTiles: {fileID: 719141963}
@@ -736,7 +736,7 @@ CircleCollider2D:
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
-  m_Radius: 0.25
+  m_Radius: 0.3
 --- !u!50 &344224468
 Rigidbody2D:
   serializedVersion: 4
