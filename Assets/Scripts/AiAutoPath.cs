@@ -7,9 +7,9 @@ public class AiAutoPath : MonoBehaviour
     public Vector3 target;
     public GameObject Navmesh;
     public GameObject circlePrefab;
-    private GameObject circle;
-    private NavMeshAgent agent;
-    private NavMeshSurface surface2D;
+    public GameObject circle;
+    public NavMeshAgent agent;
+    public NavMeshSurface surface2D;
 
     private bool navMeshNeedsUpdate;
 
@@ -68,7 +68,5 @@ public class AiAutoPath : MonoBehaviour
 
         // Update the NavMesh with the modified settings
         surface2D.UpdateNavMesh(surface2D.navMeshData);
-
-        Debug.Log($"NavMesh dynamically rebaked with agent radius: {agent.radius}");
     }
 }

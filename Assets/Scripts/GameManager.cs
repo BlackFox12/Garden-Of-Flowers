@@ -66,11 +66,16 @@ public class GameManager : MonoBehaviour
 
     public void GameOver(bool won)
     {
+        foreach (GameObject player in players)
+        {
+            Destroy(player);
+        }
         gameOverPanel.SetActive(true);
 
         // Set the appropriate message based on win/loss
         if (gameOverText != null)
         {
+
             if (won)
             {
                 gameOverText.text = "You Won!";

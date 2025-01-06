@@ -27,14 +27,19 @@ public class BombController : MonoBehaviour
     public Destructible destructiblePrefab;
 
     [Header("AI Auto Pathing")]
+    public GameObject aiAgent; 
     public AiAutoPath aiAutoPath;
 
     private void OnEnable()
     {
         bombsRemaining = bombAmount;
-        if (aiAutoPath != null)
+        if (aiAgent == null)
         {
-            aiAutoPath = GetComponent<AiAutoPath>();
+            Debug.LogError("aiAgent not assigned");
+        }
+        if (aiAutoPath == null)
+        {
+            aiAutoPath = aiAgent.GetComponent<AiAutoPath>();
         }
     }
 
@@ -162,7 +167,6 @@ public class BombController : MonoBehaviour
 
         if (tile == null)
         {
-            Debug.LogWarning($"No destructible tile found at position {position}.");
             return;
         }
 

@@ -54,6 +54,15 @@ public class DestroyFlowers : BasePrimitiveAction
 
         Vector3 agentPosition = aiAgent.transform.position;
 
+        // Check if the AI is already adjacent to a flower
+        if (IsAdjacentToFlower(agentPosition, flowerExtractor.flowerPositions))
+        {
+            // Place a bomb if adjacent to a flower
+            bombController.PlaceBombExternally();
+            bombPlaced = true;
+            return TaskStatus.COMPLETED;
+        }
+
         if (!bombPlaced)
         {
             // Find the nearest flower
@@ -74,21 +83,37 @@ public class DestroyFlowers : BasePrimitiveAction
 
             // Move the AI towards the target position
             enemyMovement.SetTargetVector(targetPosition);
-
-            // Check if the AI has reached the target position
-            if (Vector3.Distance(agentPosition, targetPosition) <= 0.2f)
-            {
-                // Place a bomb
-                bombController.PlaceBombExternally();
-                bombPlaced = true;
-                return TaskStatus.COMPLETED;
-            }
-
             return TaskStatus.RUNNING;
         }
 
         return TaskStatus.COMPLETED;
     }
+
+    private bool IsAdjacentToFlower(Vector3 agentPosition, List<Vector3> flowerPositions)
+    {
+        // Define directions to check around the agent's current position
+        Vector3[] directions = new Vector3[]
+        {
+        Vector3.up, Vector3.down, Vector3.left, Vector3.right
+        };
+
+        foreach (Vector3 flowerPosition in flowerPositions)
+        {
+            foreach (Vector3 direction in directions)
+            {
+                Vector3 adjacentPosition = agentPosition + direction;
+
+                // Check if the adjacent position matches the flower position
+                if (Vector3.Distance(adjacentPosition, flowerPosition) <= 0.1f)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
 
     private Vector3 FindNearestFlower(Vector3 agentPosition, List<Vector3> flowerPositions)
     {
@@ -122,7 +147,7 @@ public class DestroyFlowers : BasePrimitiveAction
 
             // Check if the adjacent position is walkable
             NavMeshHit hit;
-            if (NavMesh.SamplePosition(adjacentPosition, out hit, 0.5f, NavMesh.AllAreas))
+            if (NavMesh.SamplePosition(adjacentPosition, out hit, 0.25f, NavMesh.AllAreas))
             {
                 return hit.position;
             }

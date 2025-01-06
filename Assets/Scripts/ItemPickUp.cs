@@ -29,7 +29,11 @@ public class ItemPickUp : MonoBehaviour
                 break;
 
             case ItemType.SpeedIncrease:
-                player.GetComponent<Movement>().speed++;
+                if (player.GetComponent<Movement>() !=  null)
+                {
+                    player.GetComponent<Movement>().speed++;
+                }
+                
                 break;
         }
 

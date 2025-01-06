@@ -3,7 +3,6 @@ using UnityEngine.AI;
 using Pada1.BBCore;
 using Pada1.BBCore.Framework;
 using Pada1.BBCore.Tasks;
-using System.Collections;
 using System.Collections.Generic;
 
 [Action("AI/Survive")]
@@ -16,6 +15,7 @@ public class Survive : BasePrimitiveAction
     private float explosionRadius;
     private BombController bombController;
     private AiAutoPath enemyMovement;
+    private const float hitboxThicknes = 0.7f;
     private const float hitboxRadius = 0.25f;
 
     public override void OnStart()
@@ -52,8 +52,9 @@ public class Survive : BasePrimitiveAction
         {
             return TaskStatus.COMPLETED;
         }
+
         int maxSearchRadius = 10; // Maximum distance to search
-        for (int radius = 1; radius <= maxSearchRadius; radius++)
+        for (int radius = 0; radius <= maxSearchRadius; radius++)
         {
             for (int angle = 0; angle < 360; angle += 45) // Check in increments of 45 degrees
             {
@@ -63,7 +64,7 @@ public class Survive : BasePrimitiveAction
                 Vector2 testPosition = currentPosition + offset;
 
                 // Check if the position is safe, valid, and clear of barriers considering the circular hitbox
-                if (IsSafe(testPosition) && CanWalkToPosition(testPosition) && IsClearOfWalls(testPosition))
+                if (IsSafe(testPosition, activeBombs) && CanWalkToPosition(testPosition) && IsClearOfWalls(testPosition))
                 {
                     enemyMovement.SetTargetVector(testPosition);
                     return TaskStatus.COMPLETED;
@@ -75,27 +76,30 @@ public class Survive : BasePrimitiveAction
         return TaskStatus.FAILED; // No safe spot was found
     }
 
-    private bool IsSafe(Vector2 position)
+    private bool IsSafe(Vector2 position, List<Vector2> activeBombs)
     {
-        List<Vector2> activeBombs = BombManager.Instance.GetActiveBombs();
+        // Adjust the radius with a safety buffer
+        float adjustedRadius = explosionRadius + hitboxRadius;
+
         foreach (Vector2 bombPosition in activeBombs)
         {
-            if (Vector2.Distance(position, bombPosition) <= explosionRadius &&
-                !IsObstacleBlocking(position, bombPosition))
+            // Check the horizontal safety: same column but within the danger radius
+            if (Mathf.Abs(position.x - bombPosition.x) <= adjustedRadius &&
+                Mathf.Abs(position.y - bombPosition.y) <= hitboxThicknes)
+            {
+                return false;
+            }
+
+            // Check the vertical safety: same row but within the danger radius
+            if (Mathf.Abs(position.y - bombPosition.y) <= adjustedRadius &&
+                Mathf.Abs(position.x - bombPosition.x) <= hitboxThicknes)
             {
                 return false;
             }
         }
-
         return true;
     }
 
-    private bool IsObstacleBlocking(Vector2 position, Vector2 bombPosition)
-    {
-        // Perform a raycast to check for obstacles blocking the explosion
-        RaycastHit2D hit = Physics2D.Raycast(bombPosition, position - bombPosition, Vector2.Distance(bombPosition, position), LayerMask.GetMask("Brick", "Flower"));
-        return (hit.collider != null);
-    }
 
     private bool CanWalkToPosition(Vector2 position)
     {
