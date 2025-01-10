@@ -9,73 +9,70 @@ public class AIMovement : MonoBehaviour
     public AnimatedSpriteRenderer spriteRendererDown;
     public AnimatedSpriteRenderer spriteRendererLeft;
     public AnimatedSpriteRenderer spriteRendererRight;
-
     private AnimatedSpriteRenderer activeSpriteRenderer;
 
     private void Awake()
     {
-        if (navAgent == null)
-        {
-            navAgent = GetComponent<NavMeshAgent>();
-        }
-
-        activeSpriteRenderer = spriteRendererDown; // Standardriktning
+        navAgent = GetComponent<NavMeshAgent>();
+        activeSpriteRenderer = spriteRendererDown;
+        
+        // Ensure initial sprite is visible
+        SetActiveSprite(spriteRendererDown);
     }
 
     private void Update()
     {
-        // Hämta NavMeshAgentens rörelsevektor
-        Vector3 velocity = navAgent.velocity;
+        Vector2 velocity = new Vector2(navAgent.velocity.x, navAgent.velocity.z);
 
-        // Ignorera rörelser som är mycket små
+        // Check if we're moving
         if (velocity.magnitude > 0.1f)
         {
-            // Bestäm riktningen baserat på hastigheten
-            if (Mathf.Abs(velocity.x) > Mathf.Abs(velocity.z))
+            // Determine primary direction of movement
+            if (Mathf.Abs(velocity.x) > Mathf.Abs(velocity.y))
             {
+                // Horizontal movement
                 if (velocity.x > 0)
                 {
-                    SetActiveSprite(spriteRendererRight); // Rörelse åt höger
+                    SetActiveSprite(spriteRendererRight);
                 }
                 else
                 {
-                    SetActiveSprite(spriteRendererLeft); // Rörelse åt vänster
+                    SetActiveSprite(spriteRendererLeft);
                 }
             }
             else
             {
-                if (velocity.z > 0)
+                // Vertical movement
+                if (velocity.y > 0)
                 {
-                    SetActiveSprite(spriteRendererUp); // Rörelse uppåt
+                    SetActiveSprite(spriteRendererUp);
                 }
                 else
                 {
-                    SetActiveSprite(spriteRendererDown); // Rörelse nedåt
+                    SetActiveSprite(spriteRendererDown);
                 }
             }
+            // Set idle to false when moving
+            activeSpriteRenderer.idle = false;
         }
         else
         {
-            // Stanna (idle)
+            // Set idle to true when not moving
             activeSpriteRenderer.idle = true;
         }
     }
 
     private void SetActiveSprite(AnimatedSpriteRenderer newSpriteRenderer)
     {
-        if (activeSpriteRenderer == newSpriteRenderer)
-        {
-            return; // Om samma sprite redan är aktiv, gör inget
-        }
+        // Disable all sprites first
+        spriteRendererUp.enabled = false;
+        spriteRendererDown.enabled = false;
+        spriteRendererLeft.enabled = false;
+        spriteRendererRight.enabled = false;
 
-        // Avaktivera alla andra spriteRenderers
-        //spriteRendererUp.enabled = newSpriteRenderer == spriteRendererUp;
-        //spriteRendererDown.enabled = newSpriteRenderer == spriteRendererDown;
-        //spriteRendererLeft.enabled = newSpriteRenderer == spriteRendererLeft;
-        //spriteRendererRight.enabled = newSpriteRenderer == spriteRendererRight;
-        newSpriteRenderer = spriteRendererDown;
-
+        // Enable only the new sprite
+        newSpriteRenderer.enabled = true;
+        
         activeSpriteRenderer = newSpriteRenderer;
-        activeSpriteRenderer.idle = false;
     }
 }

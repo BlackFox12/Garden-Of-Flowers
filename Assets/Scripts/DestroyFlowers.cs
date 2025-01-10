@@ -19,6 +19,9 @@ public class DestroyFlowers : BasePrimitiveAction
     private AiAutoPath enemyMovement;
     private FlowerExtractor flowerExtractor;
     private bool bombPlaced;
+    private Vector3 targetFlowerPosition;
+    private Vector3 selectedAdjacentPosition;
+    private bool hasSelectedTarget = false;
 
     public override void OnStart()
     {
@@ -42,6 +45,9 @@ public class DestroyFlowers : BasePrimitiveAction
         }
 
         bombPlaced = false;
+        hasSelectedTarget = false;
+        targetFlowerPosition = Vector3.zero;
+        selectedAdjacentPosition = Vector3.zero;
     }
 
     public override TaskStatus OnUpdate()
@@ -54,66 +60,148 @@ public class DestroyFlowers : BasePrimitiveAction
 
         Vector3 agentPosition = aiAgent.transform.position;
 
-        // Check if the AI is already adjacent to a flower
-        if (IsAdjacentToFlower(agentPosition, flowerExtractor.flowerPositions))
+        // If we haven't selected a target yet, update flower positions and find one
+        if (!hasSelectedTarget)
         {
-            // Place a bomb if adjacent to a flower
-            bombController.PlaceBombExternally();
-            bombPlaced = true;
-            return TaskStatus.COMPLETED;
-        }
+            // Update flower positions before selecting target
+            flowerExtractor.flowerPositions = flowerExtractor.ExtractFlowerPositions();
+            
+            if (flowerExtractor.flowerPositions.Count == 0)
+            {
+                Debug.Log("No flowers remaining.");
+                return TaskStatus.COMPLETED;
+            }
 
-        if (!bombPlaced)
-        {
-            // Find the nearest flower
-            Vector3 nearestFlower = FindNearestFlower(agentPosition, flowerExtractor.flowerPositions);
-            if (nearestFlower == Vector3.zero)
+            targetFlowerPosition = FindNearestFlower(agentPosition, flowerExtractor.flowerPositions);
+            if (targetFlowerPosition == Vector3.zero)
             {
                 Debug.LogWarning("No valid flower found.");
                 return TaskStatus.FAILED;
             }
 
-            // Find an adjacent walkable position near the flower
-            Vector3 targetPosition = FindAdjacentWalkablePosition(nearestFlower);
-            if (targetPosition == Vector3.zero)
+            selectedAdjacentPosition = FindAdjacentWalkablePosition(targetFlowerPosition);
+            if (selectedAdjacentPosition == Vector3.zero)
             {
                 Debug.LogWarning("No walkable position found near the flower.");
                 return TaskStatus.FAILED;
             }
 
-            // Move the AI towards the target position
-            enemyMovement.SetTargetVector(targetPosition);
-            return TaskStatus.RUNNING;
+            hasSelectedTarget = true;
+            enemyMovement.SetTargetVector(selectedAdjacentPosition);
         }
 
-        return TaskStatus.COMPLETED;
+        // Check if we've reached our selected adjacent position
+        if (Vector3.Distance(agentPosition, selectedAdjacentPosition) < 0.1f)
+        {
+            if (!bombPlaced)
+            {
+                bombController.PlaceBombExternally();
+                bombPlaced = true;
+            }
+            return TaskStatus.COMPLETED;
+        }
+
+        return TaskStatus.RUNNING;
     }
 
-    private bool IsAdjacentToFlower(Vector3 agentPosition, List<Vector3> flowerPositions)
+    private bool IsAdjacentToFlower(Vector3 position, Vector3 flowerPosition)
     {
-        // Define directions to check around the agent's current position
         Vector3[] directions = new Vector3[]
         {
-        Vector3.up, Vector3.down, Vector3.left, Vector3.right
+            Vector3.up,
+            Vector3.down,
+            Vector3.left,
+            Vector3.right
         };
 
-        foreach (Vector3 flowerPosition in flowerPositions)
+        foreach (Vector3 direction in directions)
         {
-            foreach (Vector3 direction in directions)
+            if (Vector3.Distance(position + direction, flowerPosition) < 0.1f)
             {
-                Vector3 adjacentPosition = agentPosition + direction;
-
-                // Check if the adjacent position matches the flower position
-                if (Vector3.Distance(adjacentPosition, flowerPosition) <= 0.1f)
-                {
-                    return true;
-                }
+                return true;
             }
         }
 
         return false;
     }
 
+    private bool CanWalkToPosition(Vector3 position)
+    {
+        NavMeshPath path = new NavMeshPath();
+        bool hasPath = NavMesh.CalculatePath(aiAgent.transform.position, position, NavMesh.AllAreas, path);
+        return hasPath && path.status == NavMeshPathStatus.PathComplete;
+    }
+
+    private Vector3 FindAdjacentWalkablePosition(Vector3 flowerPosition)
+    {
+        // Round the flower position to ensure we're working with exact grid positions
+        Vector3 exactFlowerPos = new Vector3(
+            Mathf.Round(flowerPosition.x),
+            Mathf.Round(flowerPosition.y),
+            flowerPosition.z
+        );
+
+        Vector3[] directions = new Vector3[]
+        {
+            Vector3.up,
+            Vector3.down,
+            Vector3.left,
+            Vector3.right
+        };
+
+        foreach (Vector3 direction in directions)
+        {
+            // Calculate exact adjacent position (should be exactly 1 unit away)
+            Vector3 adjacentPosition = exactFlowerPos + direction;
+            
+            // Check if position is orthogonally adjacent (using Manhattan distance)
+            float xDiff = Mathf.Abs(adjacentPosition.x - exactFlowerPos.x);
+            float yDiff = Mathf.Abs(adjacentPosition.y - exactFlowerPos.y);
+            
+            // Ensure exactly one coordinate differs by 1, and the other by 0
+            if (!((xDiff == 1 && yDiff == 0) || (xDiff == 0 && yDiff == 1)))
+            {
+                continue;
+            }
+
+            // Check if we can actually reach this position
+            if (!CanWalkToPosition(adjacentPosition))
+            {
+                continue;
+            }
+
+            // Check if position is on NavMesh
+            NavMeshHit hit;
+            if (NavMesh.SamplePosition(adjacentPosition, out hit, 0.1f, NavMesh.AllAreas))
+            {
+                // Ensure the NavMesh position hasn't shifted us off our exact position
+                if (Vector3.Distance(hit.position, adjacentPosition) < 0.1f)
+                {
+                    // Check if the position is clear of obstacles
+                    Collider2D[] colliders = Physics2D.OverlapCircleAll(adjacentPosition, 0.1f);
+                    bool isBlocked = false;
+                    foreach (Collider2D collider in colliders)
+                    {
+                        if (collider.gameObject.layer == LayerMask.NameToLayer("Wall") ||
+                            collider.gameObject.layer == LayerMask.NameToLayer("Brick") ||
+                            collider.gameObject.layer == LayerMask.NameToLayer("Flower"))
+                        {
+                            isBlocked = true;
+                            break;
+                        }
+                    }
+                    
+                    if (!isBlocked)
+                    {
+                        return adjacentPosition;
+                    }
+                }
+            }
+        }
+
+        Debug.LogWarning($"No valid orthogonal adjacent position found for flower at {exactFlowerPos}");
+        return Vector3.zero;
+    }
 
     private Vector3 FindNearestFlower(Vector3 agentPosition, List<Vector3> flowerPositions)
     {
@@ -131,28 +219,5 @@ public class DestroyFlowers : BasePrimitiveAction
         }
 
         return nearestFlower;
-    }
-
-    private Vector3 FindAdjacentWalkablePosition(Vector3 flowerPosition)
-    {
-        // Define directions to check around the flower (up, down, left, right)
-        Vector3[] directions = new Vector3[]
-        {
-            Vector3.up, Vector3.down, Vector3.left, Vector3.right
-        };
-
-        foreach (Vector3 direction in directions)
-        {
-            Vector3 adjacentPosition = flowerPosition + direction;
-
-            // Check if the adjacent position is walkable
-            NavMeshHit hit;
-            if (NavMesh.SamplePosition(adjacentPosition, out hit, 0.25f, NavMesh.AllAreas))
-            {
-                return hit.position;
-            }
-        }
-
-        return Vector3.zero; // No valid adjacent position found
     }
 }

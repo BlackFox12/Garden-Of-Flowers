@@ -32,8 +32,10 @@ public class ItemPickUp : MonoBehaviour
                 if (player.GetComponent<Movement>() !=  null)
                 {
                     player.GetComponent<Movement>().speed++;
+                }else if (player.GetComponent<UnityEngine.AI.NavMeshAgent>() != null)
+                {
+                    player.GetComponent<UnityEngine.AI.NavMeshAgent>().speed++;
                 }
-                
                 break;
         }
 

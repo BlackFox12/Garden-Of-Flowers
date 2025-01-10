@@ -17,7 +17,7 @@ public class FlowerExtractor : MonoBehaviour
         flowerPositions = ExtractFlowerPositions();
     }
 
-    private List<Vector3> ExtractFlowerPositions()
+    public List<Vector3> ExtractFlowerPositions()
     {
         List<Vector3> positions = new List<Vector3>();
         BoundsInt bounds = flowerTilemap.cellBounds;

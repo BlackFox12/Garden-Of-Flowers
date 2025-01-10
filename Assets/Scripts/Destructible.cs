@@ -15,15 +15,14 @@ public class Destructible : MonoBehaviour
     {
         Destroy(gameObject,  destructionTime);
     }
-
-
-
+    
     private void OnDestroy()
     {
         if (spawnableItems.Length > 0 && Random.value < itemSpawnChance)
         {
             int randomIndex = Random.Range(0, spawnableItems.Length);
-            Instantiate(spawnableItems[randomIndex], transform.position, Quaternion.identity);
+            GameObject item = Instantiate(spawnableItems[randomIndex], transform.position, Quaternion.identity);
+            ItemManager.Instance.AddItem(item);
         }
     }
 

@@ -8,14 +8,35 @@ using System.Collections.Generic;
 [Help("Checks if the aiAigent is in danger from any active bombs.")]
 public class IsInDangerCondition : ConditionBase
 {
+    private const float hitboxThickness = 0.9f; // Match the thickness used in Survive.cs
+
     [InParam("aiAgent")]
     [Help("The player object to check for danger.")]
     public GameObject aiAgent;
+
+    [InParam("waitingForBomb")]
+    [Help("Whether the AI is currently waiting for a bomb to explode.")]
+    public bool waitingForBomb;
+
+    private static bool dangerLocked = false;  // Shared static variable to maintain state
+
+    public static void LockDanger()
+    {
+        dangerLocked = true;
+    }
+
+    public static void UnlockDanger()
+    {
+        dangerLocked = false;
+    }
 
     public override bool Check()
     {
         if (aiAgent == null)
             return false;
+
+        if (dangerLocked || waitingForBomb)
+            return true;
 
         List<Vector2> activeBombs = BombManager.Instance.GetActiveBombs();
         if (activeBombs == null || activeBombs.Count == 0)
@@ -23,7 +44,6 @@ public class IsInDangerCondition : ConditionBase
             return false;
         }
             
-        // Calculate explosion range (radius + spread of rabbits)
         BombController bombController = aiAgent.GetComponent<BombController>();
         if (bombController == null)
         {
@@ -32,18 +52,28 @@ public class IsInDangerCondition : ConditionBase
         }
 
         Vector2 playerPosition = aiAgent.transform.position;
+        float explosionRadius = bombController.explosionRadius + 1.0f; // Added safety buffer
 
         foreach (var bombPosition in activeBombs)
         {
             if (bombPosition == null)
                 continue;
 
-            float explosionRadius = bombController.explosionRadius + 1.0f;
-
-            if (Vector2.Distance(playerPosition, bombPosition) <= explosionRadius &&
+            // Check horizontal danger: same column but within the explosion radius
+            if (Mathf.Abs(playerPosition.x - bombPosition.x) <= explosionRadius &&
+                Mathf.Abs(playerPosition.y - bombPosition.y) <= hitboxThickness &&
                 !IsObstacleBlocking(playerPosition, bombPosition))
             {
+                LockDanger();
+                return true;
+            }
 
+            // Check vertical danger: same row but within the explosion radius
+            if (Mathf.Abs(playerPosition.y - bombPosition.y) <= explosionRadius &&
+                Mathf.Abs(playerPosition.x - bombPosition.x) <= hitboxThickness &&
+                !IsObstacleBlocking(playerPosition, bombPosition))
+            {
+                LockDanger();
                 return true;
             }
         }

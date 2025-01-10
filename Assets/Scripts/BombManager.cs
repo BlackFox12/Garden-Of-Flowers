@@ -8,7 +8,7 @@ public class BombManager : MonoBehaviour
     public static BombManager Instance;
 
     private List<Vector2> activeBombs = new List<Vector2>();
-    public float delayToRemoveBomb = 0.2f;
+    public float delayToRemoveBomb = 0.4f;
 
     private void Awake()
     {
@@ -35,8 +35,8 @@ public class BombManager : MonoBehaviour
     {
         if (activeBombs.Contains(bombPosition))
         {
-            StartCoroutine(RemoveBombAfterDelay(bombPosition));
-            //activeBombs.Remove(bombPosition);
+           // StartCoroutine(RemoveBombAfterDelay(bombPosition));
+            activeBombs.Remove(bombPosition);
         }
     }
 
@@ -47,7 +47,7 @@ public class BombManager : MonoBehaviour
         {
             activeBombs.Remove(bombPosition);
         }
-    }
+        }
 
     public List<Vector2> GetActiveBombs()
     {

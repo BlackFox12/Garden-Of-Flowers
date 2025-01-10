@@ -6,8 +6,6 @@ public class AiAutoPath : MonoBehaviour
 {
     public Vector3 target;
     public GameObject Navmesh;
-    public GameObject circlePrefab;
-    public GameObject circle;
     public NavMeshAgent agent;
     public NavMeshSurface surface2D;
 
@@ -42,14 +40,6 @@ public class AiAutoPath : MonoBehaviour
 
     public void SetTargetVector(Vector3 newTargetVector)
     {
-        if (circle == null)
-        {
-            circle = Instantiate(circlePrefab, newTargetVector, Quaternion.identity);
-        }
-        else
-        {
-            circle.transform.position = newTargetVector;
-        }
         target = newTargetVector;
     }
 
